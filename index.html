@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Movie Review-Rate</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --accent-gold: #fbbf24;
+            --accent-blue: #fbbf24;
+            --glass: rgba(255, 255, 255, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success-green: #690000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body,
+        html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            color: #E8F8F0;
+            background-image: url("bg.png");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+
+            animation: panBackground 20s ease-in-out infinite;
+        }
+
+        @keyframes panBackground {
+            0% {
+                background-position: left center;
+            }
+
+            50% {
+                background-position: right center;
+            }
+
+            100% {
+                background-position: left center;
+            }
+        }
+
+        /* Deep Blue Texture */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("image_0.png");
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Professional Header */
+        .header-bar {
+            display: flex;
+            height: 12vh;
+
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo-sec {
+            width: 30vw;
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            padding-left: 10px;
+            font-weight: 900;
+            color: var(--accent-blue);
+            letter-spacing: 2px;
+        }
+
+        .title-sec {
+            width: 70vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Pulse Glow Animation */
+        .text-glow {
+            display: inline-block;
+            animation: pulse-glow-text 2.5s infinite ease-in-out;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        @keyframes pulse-glow-text {
+
+            0%,
+            100% {
+                transform: scale(1.0);
+                text-shadow: 0 0 10px var(--accent-gold);
+            }
+
+            50% {
+                transform: scale(1.15);
+                text-shadow: 0 0 25px var(--accent-gold);
+            }
+        }
+
+        /* Home Screen Card */
+        .card {
+            background: var(--glass);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(25px);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+
+        }
+
+        #movie-search {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--accent-blue);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .movie-list {
+            width: 100%;
+            max-height: 180px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .movie-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--glass-border);
+            transition: 0.2s;
+            text-transform: capitalize;
+        }
+
+        .movie-item:hover,
+        .movie-item.selected {
+            background: var(--accent-blue);
+            color: #000;
+        }
+
+        /* Quiz Layout */
+        .question-box {
+            height: 20vh;
+            display: flex;
+            align-items: left;
+            justify-content: left;
+            text-align: left;
+            padding: 25px;
+            font-size: 1.8rem;
+            background-color: var(--success-green);
+            border: 2px solid #fff;
+            color: #E8F8F0;
+        }
+
+        .options-grid {
+            height: 68vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            background: rgba(6, 26, 69, 0.4);
+        }
+
+        .option-item {
+            height: 14%;
+            background: rgba(6, 26, 69, 0.6);
+            border: 1px solid #aaa;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            font-size: 1.15rem;
+            transition: 0.4s;
+        }
+
+        .success-box {
+            background: var(--success-green) !important;
+            border: 2px solid #fff;
+            box-shadow: 0 0 30px var(--success-green);
+        }
+
+        /* Explanation Popup */
+        #exp-overlay {
+
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .exp-card {
+            min-height: 30vh;
+            width: 85vw;
+            background: var(--success-green);
+            border: 2px solid #fff;
+            color: #E8F8F0;
+            padding: 40px;
+            border-radius: 25px;
+            transform: scale(0);
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Final Rating */
+        #star-container {
+            font-size: 5rem;
+            letter-spacing: 12px;
+            margin-bottom: 15px;
+        }
+
+        #star-container span {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log("Service Worker Registered"));
+        }
+    </script>
+    <section id="screen-start" class="screen active" style="justify-content:center; align-items:center;">
+        <div class="card">
+            <h1 style="margin-bottom:25px;">Movie <span style="color:var(--accent-blue)">Review-Rate</span></h1>
+            <input type="text" id="movie-search" placeholder="Search Movie Database..." onkeyup="filterMovies()">
+            <div class="movie-list" id="movie-list">
+                <p style="padding: 20px; opacity: 0.5;">Accessing Database...</p>
+            </div>
+            <button onclick="boot()"
+                style="width:100%; margin-top:20px; padding:18px; border-radius:12px; background:var(--accent-blue); border:none; font-weight:bold; cursor:pointer; text-transform:uppercase;">Start
+                Review-Rating</button>
+        </div>
+    </section>
+
+    <section id="screen-video" class="screen">
+        <video id="main-video" playsinline style="width:100%; height:100%; object-fit:cover;"></video>
+    </section>
+
+    <section id="screen-details" class="screen">
+        <div id="details-media-box" style="height:50vh;"></div>
+        <h2 id="det-title"
+            style="height:12vh; color:var(--accent-gold); font-size:2.5rem; text-transform:uppercase; text-align:center; padding-top: 10px;">
+        </h2>
+        <div
+            style="height:38vh; padding:10px 20px 10px 20px; text-align:left; background: linear-gradient(0deg, #020617 25%, transparent 100%); display:flex; flex-direction:column; justify-content:top;">
+            <p id="det-text" style="margin-top:20px; font-size:1.3rem; opacity:0.8; line-height:1.6;"></p>
+        </div>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+        <header class="header-bar">
+            <div class="logo-sec">Review-Rate</div>
+            <div class="title-sec"><span id="quiz-movie-name" class="text-glow"></span></div>
+        </header>
+        <div class="question-box" id="q-text"></div>
+        <div class="options-grid" id="opt-container"></div>
+        <div id="exp-overlay">
+            <div class="exp-card" id="exp-card-ui">
+                <h3
+                    style="font-size:1.4rem; margin-bottom:15px; color: #E8F8F0; text-align:center; background-color:#0c2664; border-radius: 4px; border: 1px solid #aaa;">
+                    EXPERT INSIGHT</h3>
+                <p id="exp-text-content" style="font-size:1.3rem; line-height:1.6;"></p>
+            </div>
+        </div>
+    </section>
+
+    <section id="screen-final" class="screen">
+        <header class="header-bar">
+            <div class="logo-sec">Review-Rate</div>
+            <div class="title-sec"><span style="opacity:0.4; letter-spacing:4px;">Overall Movie Rating</span></div>
+        </header>
+        <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <h2 id="final-title" style="font-size:2.8rem; margin-bottom:10px; text-transform: uppercase;"></h2>
+
+            <div id="star-container" class="text-glow"></div>
+
+            <div style="font-size:1.5rem; color:var(--accent-gold); margin-bottom:40px;">SCORE: <span
+                    id="final-score">0.0</span> / 5.0</div>
+            <p id="final-comment"
+                style="width:75%; text-align:center; color:var(--accent-blue); font-style:italic; font-size:1.3rem; border-top:1px solid var(--glass-border); padding-top:25px;">
+            </p>
+        </div>
+    </section>
+
+    <script>
+        let data = null, qIdx = 0, score = 0, jsonFile = "";
+        const aud = {
+            bg: new Audio(),
+            type: new Audio('typing.mp3'),
+            tick: new Audio('ticker.mp3'),
+            win: new Audio('win.mp3'),
+            zoom: new Audio('zoom.mp3'),
+            voice: new Audio(),
+            worst: new Audio(),
+            normal: new Audio(),
+            excellent: new Audio()
+        };
+
+        // Automated Movie List Loading
+        window.onload = async function () {
+            try {
+                const response = await fetch('movie/movies.json');
+                const fileList = await response.json();
+                const listContainer = document.getElementById('movie-list');
+                listContainer.innerHTML = "";
+                fileList.forEach(fileName => {
+                    const div = document.createElement('div');
+                    div.className = "movie-item";
+                    let displayName = fileName.replace('.json', '').replace('_data', '').replace('_', ' ');
+                    div.innerText = displayName;
+                    div.onclick = function () { select(this, fileName); };
+                    listContainer.appendChild(div);
+                });
+            } catch (e) {
+                document.getElementById('movie-list').innerHTML = "<p style='color:red; padding:10px;'>movie/movies.json not found!</p>";
+            }
+        };
+
+        function select(el, file) {
+            document.querySelectorAll('.movie-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected'); jsonFile = file;
+        }
+
+        async function boot() {
+            if (!jsonFile) return alert("Select a movie.");
+            const res = await fetch(jsonFile);
+            data = await res.json();
+
+            aud.bg.src = data.bg_music; aud.bg.loop = true; aud.bg.volume = 0.3; aud.bg.play().catch(() => { });
+
+            show('screen-video');
+            const v = document.getElementById('main-video');
+            v.muted = false;
+            v.volume = 1.0;
+            v.src = data.media_url; v.play();
+            v.onended = () => runDetails();
+        }
+
+        function show(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function runDetails() {
+            show('screen-details');
+            document.getElementById('details-media-box').innerHTML = `<video src="${data.media_url}" autoplay muted loop style="width:100%; height:100%; object-fit:cover;"></video>`;
+            document.getElementById('det-title').innerText = data.title;
+            type("det-text", data.cast_crew, 30, () => {
+                aud.voice.src = data.intro_voice; aud.voice.play().catch(() => { });
+                setTimeout(runQuiz, 4000);
+            });
+        }
+
+        function runQuiz() {
+            show('screen-quiz');
+            document.getElementById('quiz-movie-name').innerText = data.title;
+            loadQ();
+        }
+
+        function loadQ() {
+            const q = data.questions[qIdx];
+            document.getElementById('q-text').innerText = "";
+            document.getElementById('opt-container').innerHTML = "";
+            document.getElementById('exp-text-content').innerText = "";
+
+            type("q-text", q.text, 40, () => {
+                aud.voice.src = q.voice; aud.voice.play().catch(() => { });
+                setTimeout(() => loadOpts(q), 2000);
+            });
+        }
+
+        function loadOpts(q) {
+            const container = document.getElementById('opt-container');
+            q.options.forEach((o, i) => {
+                const div = document.createElement('div');
+                div.className = "option-item"; div.id = `opt-${i}`;
+                container.appendChild(div);
+                type(div.id, o, 30, () => {
+                    if (i === 4) handleResult(q);
+                });
+            });
+        }
+
+        function handleResult(q) {
+            let ticks = 0;
+            const t = setInterval(() => {
+                aud.tick.play().catch(() => { }); ticks++;
+                if (ticks === 6) {
+                    clearInterval(t);
+                    const el = document.getElementById(`opt-${q.correct_index}`);
+                    el.classList.add('success-box');
+                    el.innerHTML = `<span class="text-glow">${el.innerText}</span>`;
+                    score += q.correct_index;
+                    aud.win.play().catch(() => { });
+                    setTimeout(() => showExp(q), 2000);
+                }
+            }, 1000);
+        }
+
+        function showExp(q) {
+            const overlay = document.getElementById('exp-overlay');
+            overlay.style.display = "flex"; aud.zoom.play().catch(() => { });
+            setTimeout(() => document.getElementById('exp-card-ui').style.transform = "scale(1)", 50);
+
+            type("exp-text-content", q.explanation, 30, () => {
+                setTimeout(() => {
+                    document.getElementById('exp-card-ui').style.transform = "scale(0)";
+                    setTimeout(() => {
+                        overlay.style.display = "none"; qIdx++;
+                        if (qIdx < data.questions.length) loadQ();
+                        else runFinal();
+                    }, 500);
+                }, 4000);
+            });
+        }
+
+        function runFinal() {
+            show('screen-final');
+            document.getElementById('final-title').innerText = data.title;
+            const res = (score / (data.questions.length * 4)) * 5;
+            document.getElementById('final-score').innerText = res.toFixed(1);
+            document.getElementById('final-comment').innerText = data.final_comment;
+
+            // Your Integrated Star Logic
+            renderStars(res);
+
+            // THREE-TIER SOUND LOGIC:
+            if (res < 2.5) {
+                // Plays if score is 0.0 to 2.4
+                aud.worst.src = data.worst;
+                aud.worst.play().catch(() => { });
+            } else if (res >= 2.5 && res <= 3.5) {
+                // Plays if score is exactly 2.5 up to 3.5
+                aud.normal.src = data.normal;
+                aud.normal.play().catch(() => { });
+            } else {
+                // Plays if score is above 3.5 (3.6 to 5.0)
+                aud.excellent.src = data.excellent;
+                aud.excellent.play().catch(() => { });
+            }
+        }
+
+        function renderStars(rating) {
+            const container = document.getElementById('star-container');
+            container.innerHTML = "";
+
+            for (let i = 1; i <= 5; i++) {
+                const span = document.createElement('span');
+                if (rating >= i) {
+                    span.innerHTML = "&#9733;";
+                    span.style.color = "var(--accent-gold)";
+                } else if (rating > i - 1) {
+                    span.innerHTML = "&#9733;";
+                    const percentage = (rating - (i - 1)) * 100;
+                    span.style.background = `linear-gradient(90deg, var(--accent-gold) ${percentage}%, rgba(255,255,255,0.2) ${percentage}%)`;
+                    span.style.webkitBackgroundClip = "text";
+                    span.style.webkitTextFillColor = "transparent";
+                } else {
+                    span.innerHTML = "&#9733;";
+                    span.style.color = "rgba(255,255,255,0.2)";
+                }
+                container.appendChild(span);
+            }
+        }
+
+        function type(id, text, speed, cb) {
+            let i = 0; const el = document.getElementById(id);
+            function t() {
+                if (i < text.length) { el.innerHTML += text.charAt(i); i++; if (i % 2 === 0) aud.type.play().catch(() => { }); setTimeout(t, speed); }
+                else if (cb) cb();
+            }
+            t();
+        }
+
+        function filterMovies() {
+            let val = document.getElementById('movie-search').value.toLowerCase();
+            document.querySelectorAll('.movie-item').forEach(i => i.style.display = i.innerText.toLowerCase().includes(val) ? "block" : "none");
+        }
+    </script>
+</body>
+
+</html>
