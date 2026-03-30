@@ -363,8 +363,8 @@
         async function boot() {
             if (!jsonFile) return alert("Select a movie.");
 
-            // UNLOCK AUDIO FOR SAFARI/IPAD
-            // We play and immediately pause every sound to tell Safari we have permission.
+            // 1. UNLOCK & PRE-LOAD ALL AUDIO OBJECTS
+            // This satisfies Safari and Chrome's security policies for all devices
             Object.values(aud).forEach(sound => {
                 sound.play().then(() => {
                     sound.pause();
@@ -375,19 +375,24 @@
             const res = await fetch(jsonFile);
             data = await res.json();
 
-            // Now start your normal background music
+            // 2. ASSIGN SOURCES IMMEDIATELY AFTER FETCH
+            // We map the JSON data to the audio objects now so they are ready later
             aud.bg.src = data.bg_music;
+            aud.voice.src = data.intro_voice;
+            aud.worst.src = data.worst;
+            aud.normal.src = data.normal;
+            aud.excellent.src = data.excellent;
+
+            // 3. SETTINGS FOR BG MUSIC (But don't play yet)
             aud.bg.loop = true;
             aud.bg.volume = 0.3;
-            aud.bg.play().catch(() => { });
 
             show('screen-video');
             const v = document.getElementById('main-video');
-            v.muted = false; // Safari requires videos with sound to be unmuted via user click
+            v.muted = false;
             v.src = data.media_url;
             v.play().catch(() => {
-                // Fallback: If video still fails, show a "Play" overlay
-                v.muted = true;
+                v.muted = true; // Auto-fallback for strict browsers
                 v.play();
             });
             v.onended = () => runDetails();
@@ -402,14 +407,17 @@
             show('screen-details');
             document.getElementById('details-media-box').innerHTML = `<video src="${data.media_url}" autoplay muted loop style="width:100%; height:100%; object-fit:cover;"></video>`;
             document.getElementById('det-title').innerText = data.title;
+
             type("det-text", data.cast_crew, 30, () => {
-                aud.voice.src = data.intro_voice; aud.voice.play().catch(() => { });
+                // Just play, don't re-assign .src
+                aud.voice.play().catch((e) => console.log("Voice failed:", e));
                 setTimeout(runQuiz, 4000);
             });
         }
 
         function runQuiz() {
             show('screen-quiz');
+            aud.bg.play().catch(() => { }); // Start music here
             document.getElementById('quiz-movie-name').innerText = data.title;
             loadQ();
         }
@@ -456,45 +464,48 @@
 
         function showExp(q) {
             const overlay = document.getElementById('exp-overlay');
-            overlay.style.display = "flex"; aud.zoom.play().catch(() => { });
+            overlay.style.display = "flex";
+            aud.zoom.play().catch(() => { });
             setTimeout(() => document.getElementById('exp-card-ui').style.transform = "scale(1)", 50);
 
             type("exp-text-content", q.explanation, 30, () => {
                 setTimeout(() => {
                     document.getElementById('exp-card-ui').style.transform = "scale(0)";
                     setTimeout(() => {
-                        overlay.style.display = "none"; qIdx++;
-                        if (qIdx < data.questions.length) loadQ();
-                        else runFinal();
+                        overlay.style.display = "none";
+                        qIdx++;
+                        if (qIdx < data.questions.length) {
+                            loadQ();
+                        } else {
+                            // This triggers the fade and then the final screen
+                            runFinal();
+                        }
                     }, 500);
                 }, 4000);
             });
         }
 
         function runFinal() {
-            show('screen-final');
-            document.getElementById('final-title').innerText = data.title;
-            const res = (score / (data.questions.length * 4)) * 5;
-            document.getElementById('final-score').innerText = res.toFixed(1);
-            document.getElementById('final-comment').innerText = data.final_comment;
+            // Fade out over 1500ms (1.5 seconds)
+            fadeOut(aud.bg, 1500, () => {
+                show('screen-final');
+                document.getElementById('final-title').innerText = data.title;
 
-            // Your Integrated Star Logic
-            renderStars(res);
+                const res = (score / (data.questions.length * 4)) * 5;
+                document.getElementById('final-score').innerText = res.toFixed(1);
+                document.getElementById('final-comment').innerText = data.final_comment;
 
-            // THREE-TIER SOUND LOGIC:
-            if (res < 2.5) {
-                // Plays if score is 0.0 to 2.4
-                aud.worst.src = data.worst;
-                aud.worst.play().catch(() => { });
-            } else if (res >= 2.5 && res <= 3.5) {
-                // Plays if score is exactly 2.5 up to 3.5
-                aud.normal.src = data.normal;
-                aud.normal.play().catch(() => { });
-            } else {
-                // Plays if score is above 3.5 (3.6 to 5.0)
-                aud.excellent.src = data.excellent;
-                aud.excellent.play().catch(() => { });
-            }
+                renderStars(res);
+
+                // Final sound effect plays after the music has fully faded out
+                if (res < 2.5) {
+                    aud.worst.play().catch(() => { });
+                } else if (res >= 2.5 && res <= 3.5) {
+                    aud.normal.play().catch(() => { });
+                } else {
+                    aud.excellent.play().catch(() => { });
+                }
+            });
         }
 
         function renderStars(rating) {
@@ -532,6 +543,24 @@
         function filterMovies() {
             let val = document.getElementById('movie-search').value.toLowerCase();
             document.querySelectorAll('.movie-item').forEach(i => i.style.display = i.innerText.toLowerCase().includes(val) ? "block" : "none");
+        }
+        function fadeOut(audio, duration, cb) {
+            const startVolume = audio.volume;
+            const interval = 50; // milliseconds
+            const step = startVolume / (duration / interval);
+
+            const fade = setInterval(() => {
+                if (audio.volume > step) {
+                    audio.volume -= step;
+                } else {
+                    audio.volume = 0;
+                    audio.pause();
+                    audio.currentTime = 0;
+                    audio.volume = startVolume; // Reset volume for next time
+                    clearInterval(fade);
+                    if (cb) cb();
+                }
+            }, interval);
         }
     </script>
 </body>
