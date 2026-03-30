@@ -362,16 +362,34 @@
 
         async function boot() {
             if (!jsonFile) return alert("Select a movie.");
+
+            // UNLOCK AUDIO FOR SAFARI/IPAD
+            // We play and immediately pause every sound to tell Safari we have permission.
+            Object.values(aud).forEach(sound => {
+                sound.play().then(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }).catch(() => { });
+            });
+
             const res = await fetch(jsonFile);
             data = await res.json();
 
-            aud.bg.src = data.bg_music; aud.bg.loop = true; aud.bg.volume = 0.3; aud.bg.play().catch(() => { });
+            // Now start your normal background music
+            aud.bg.src = data.bg_music;
+            aud.bg.loop = true;
+            aud.bg.volume = 0.3;
+            aud.bg.play().catch(() => { });
 
             show('screen-video');
             const v = document.getElementById('main-video');
-            v.muted = false;
-            v.volume = 1.0;
-            v.src = data.media_url; v.play();
+            v.muted = false; // Safari requires videos with sound to be unmuted via user click
+            v.src = data.media_url;
+            v.play().catch(() => {
+                // Fallback: If video still fails, show a "Play" overlay
+                v.muted = true;
+                v.play();
+            });
             v.onended = () => runDetails();
         }
 
