@@ -35,7 +35,7 @@
         "Stunning",
         "Practical Effects Perfection"
       ],
-      "correct_index": 4,
+      "correct_index": 2,
       "explanation": "The production built a massive 100-foot centrifugal tube that actually rotated 360 degrees to achieve the zero-gravity effect."
     },
     {
@@ -49,6 +49,32 @@
         "Cinematic Perfection"
       ],
       "correct_index": 3,
+      "explanation": "The ending focuses not on whether the top falls, but on the fact that Cobb finally stops looking at it, choosing his reality."
+    },
+    {
+      "text": "Rate the emotional impact of the ending (The Spinning Top)?",
+      "voice": "movie/voice.mp3",
+      "options": [
+        "Frustrating",
+        "Predictable",
+        "Thought-Provoking",
+        "Brilliant",
+        "Cinematic Perfection"
+      ],
+      "correct_index": 0,
+      "explanation": "The ending focuses not on whether the top falls, but on the fact that Cobb finally stops looking at it, choosing his reality."
+    },
+    {
+      "text": "Rate the emotional impact of the ending (The Spinning Top)?",
+      "voice": "movie/voice.mp3",
+      "options": [
+        "Frustrating",
+        "Predictable",
+        "Thought-Provoking",
+        "Brilliant",
+        "Cinematic Perfection"
+      ],
+      "correct_index": 2,
       "explanation": "The ending focuses not on whether the top falls, but on the fact that Cobb finally stops looking at it, choosing his reality."
     }
   ]
