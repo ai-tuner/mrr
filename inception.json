@@ -1,0 +1,82 @@
+{
+  "movie_id": "m104",
+  "title": "Inception",
+  "media_url": "review-media/vid.mp4",
+  "details_video": "review-media/trailer.mp4",
+  "bg_music": "default-media/bgm.mp3",
+  "cast_crew": "Director: Christopher Nolan.<br> Starring: Leonardo DiCaprio, Joseph Gordon-Levitt, Elliot Page. <br> Music: Hans Zimmer.",
+  "intro_voice": "review-media/intro-voice.mp3",
+
+  "worst": "review-media/worst.mp3",
+  "normal": "review-media/normal.mp3",
+  "excellent": "review-media/excellent.mp3",
+
+  "final_comment": "A complex, multi-layered masterpiece that challenges the boundaries between dreams and reality.",
+  "questions": [
+    {
+      "text": "How effectively did the 'Dream Within a Dream' concept drive the plot?",
+      "voice": "default-media/voice.mp3",
+      "options": [
+        "Too Confusing",
+        "Average Sci-Fi",
+        "Interesting",
+        "Highly Engaging",
+        "Genius Storytelling"
+      ],
+      "correct_index": 4,
+      "explanation": "Nolan spent 10 years writing the script to ensure the internal logic of the dream layers remained consistent and grounded."
+    },
+    {
+      "text": "How would you rate the practical 'Rotating Hallway' fight sequence?",
+      "voice": "default-media/voice.mp3",
+      "options": [
+        "Dated",
+        "Standard",
+        "Good Effort",
+        "Stunning",
+        "Practical Effects Perfection"
+      ],
+      "correct_index": 2,
+      "explanation": "The production built a massive 100-foot centrifugal tube that actually rotated 360 degrees to achieve the zero-gravity effect."
+    },
+    {
+      "text": "Rate the emotional impact of the ending (The Spinning Top)?",
+      "voice": "default-media/voice.mp3",
+      "options": [
+        "Frustrating",
+        "Predictable",
+        "Thought-Provoking",
+        "Brilliant",
+        "Cinematic Perfection"
+      ],
+      "correct_index": 3,
+      "explanation": "The ending focuses not on whether the top falls, but on the fact that Cobb finally stops looking at it, choosing his reality."
+    },
+    {
+      "text": "Rate the emotional impact of the ending (The Spinning Top)?",
+      "voice": "default-media/voice.mp3",
+      "options": [
+        "Frustrating",
+        "Predictable",
+        "Thought-Provoking",
+        "Brilliant",
+        "Cinematic Perfection"
+      ],
+      "correct_index": 0,
+      "explanation": "The ending focuses not on whether the top falls, but on the fact that Cobb finally stops looking at it, choosing his reality."
+    },
+    {
+      "text": "Rate the emotional impact of the ending (The Spinning Top)?",
+      "voice": "default-media/voice.mp3",
+      "options": [
+        "Frustrating",
+        "Predictable",
+        "Thought-Provoking",
+        "Brilliant",
+        "Cinematic Perfection"
+      ],
+      "correct_index": 2,
+      "explanation": "The ending focuses not on whether the top falls, but on the fact that Cobb finally stops looking at it, choosing his reality."
+    }
+  ]
+}

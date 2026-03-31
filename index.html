@@ -31,7 +31,7 @@
             overflow: hidden;
             background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
             color: #E8F8F0;
-            background-image: url("bg.png");
+            background-image: url("default-media/bg.png");
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -114,7 +114,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            
+
         }
 
         /* Pulse Animation for Live Score */
@@ -262,6 +262,8 @@
 
         .options-grid {
             height: 68vh;
+
+
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -327,7 +329,7 @@
         }
 
         /* Base Scaling for different devices */
-        @media (min-width: 768px) {
+        @media (min-width: 601px) {
             #star-container {
                 font-size: 5rem;
                 gap: 12px;
@@ -340,9 +342,15 @@
             .option-item {
                 font-size: 1.4rem;
             }
+
+            .options-grid {
+               min-width: 600px;
+                max-width: 70vw;
+                margin: 0 auto;
+            }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
             .question-box {
                 font-size: 1.8rem;
                 padding: 15px;
@@ -445,7 +453,7 @@
 
     <section id="screen-quiz" class="screen">
         <header class="header-bar">
-            <div class="logo-sec">ReviewRate</div>
+            <div class="logo-sec">MovieRR</div>
             <div class="title-sec"><span id="quiz-movie-name" class="text-glow"></span></div>
             <div class="score-sec">
                 <div id="diff-badge" class="score-badge">+0.0</div>
@@ -467,7 +475,7 @@
 
     <section id="screen-final" class="screen">
         <header class="header-bar">
-            <div class="logo-sec">ReviewRate</div>
+            <div class="logo-sec">MovieRR</div>
             <div class="title-sec"><span style="opacity:0.4; letter-spacing:1px;">Movie Review-Rate</span></div>
         </header>
         <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -488,10 +496,10 @@
         let lastRunningScore = 0; // NEW: To track the change
         const aud = {
             bg: new Audio(),
-            type: new Audio('typing.mp3'),
-            tick: new Audio('ticker.mp3'),
-            win: new Audio('win.mp3'),
-            zoom: new Audio('zoom.mp3'),
+            type: new Audio('default-media/typing.mp3'),
+            tick: new Audio('default-media/ticker.mp3'),
+            win: new Audio('default-media/win.mp3'),
+            zoom: new Audio('default-media/zoom.mp3'),
             voice: new Audio(),
             worst: new Audio(),
             normal: new Audio(),
@@ -501,7 +509,7 @@
         // Automated Movie List Loading
         window.onload = async function () {
             try {
-                const response = await fetch('movie/movies.json');
+                const response = await fetch('movies.json');
                 const fileList = await response.json();
                 const listContainer = document.getElementById('movie-list');
                 listContainer.innerHTML = "";
@@ -514,7 +522,7 @@
                     listContainer.appendChild(div);
                 });
             } catch (e) {
-                document.getElementById('movie-list').innerHTML = "<p style='color:red; padding:10px;'>movie/movies.json not found!</p>";
+                document.getElementById('movie-list').innerHTML = "<p style='color:red; padding:10px;'>movies.json not found!</p>";
             }
         };
 
@@ -568,11 +576,16 @@
 
         function runDetails() {
             show('screen-details');
-            document.getElementById('details-media-box').innerHTML = `<video src="${data.media_url}" autoplay muted loop style="width:100%; height:100%; object-fit:cover;"></video>`;
+
+            // CHANGED: Use data.details_video instead of data.media_url
+            const detailsVideoSrc = data.details_video || data.media_url; // Fallback to main if details is missing
+
+            document.getElementById('details-media-box').innerHTML =
+                `<video src="${detailsVideoSrc}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover;"></video>`;
+
             document.getElementById('det-title').innerText = data.title;
 
             type("det-text", data.cast_crew, 30, () => {
-                // Just play, don't re-assign .src
                 aud.voice.play().catch((e) => console.log("Voice failed:", e));
                 setTimeout(runQuiz, 4000);
             });
@@ -730,10 +743,34 @@
         }
 
         function type(id, text, speed, cb) {
-            let i = 0; const el = document.getElementById(id);
+            let i = 0;
+            const el = document.getElementById(id);
+            el.innerHTML = ""; // Clear existing content
+
             function t() {
-                if (i < text.length) { el.innerHTML += text.charAt(i); i++; if (i % 2 === 0) aud.type.play().catch(() => { }); setTimeout(t, speed); }
-                else if (cb) cb();
+                if (i < text.length) {
+                    // Check if we are starting an HTML tag
+                    if (text.charAt(i) === '<') {
+                        let tagEnd = text.indexOf('>', i);
+                        if (tagEnd !== -1) {
+                            // Add the whole tag at once and move the index
+                            el.innerHTML += text.substring(i, tagEnd + 1);
+                            i = tagEnd + 1;
+                            return t(); // Immediate recursive call to continue typing
+                        }
+                    }
+
+                    // Normal character typing
+                    el.innerHTML += text.charAt(i);
+                    i++;
+
+                    // Audio feedback (every 2nd char)
+                    if (i % 2 === 0) aud.type.play().catch(() => { });
+
+                    setTimeout(t, speed);
+                } else if (cb) {
+                    cb();
+                }
             }
             t();
         }
