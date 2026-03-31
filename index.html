@@ -81,8 +81,8 @@
         .header-bar {
             display: flex;
             height: 12vh;
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+
+
             justify-content: space-between;
             /* Ensures equal spacing */
         }
@@ -106,6 +106,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
 
         .score-sec {
@@ -344,7 +345,7 @@
             }
 
             .options-grid {
-               min-width: 600px;
+                min-width: 600px;
                 max-width: 70vw;
                 margin: 0 auto;
             }
@@ -413,6 +414,20 @@
             padding-top: 20px;
             margin-top: 10px;
         }
+
+        #details-media-box {
+            height: 50vh;
+            display: flex;
+            /* Enables Flexbox */
+            align-items: center;
+            /* Vertical centering */
+            justify-content: center;
+            /* Horizontal centering */
+            overflow: hidden;
+            /* Prevents accidental scrollbars */
+            
+            /* Optional: adds depth behind the video */
+        }
     </style>
 </head>
 
@@ -441,9 +456,9 @@
     </section>
 
     <section id="screen-details" class="screen">
-        <div id="details-media-box" style="height:50vh;"></div>
+        <div id="details-media-box" style="max-height:50vh;"></div>
         <h2 id="det-title"
-            style="height:12vh; color:var(--accent-gold); font-size:2.5rem; text-transform:uppercase; text-align:center; padding-top: 10px;">
+            style="height:12vh; color:var(--accent-gold); font-size:2rem; text-transform:uppercase; text-align:center; padding-top: 10px;">
         </h2>
         <div
             style="height:38vh; padding:10px 20px 10px 20px; text-align:left; background: linear-gradient(0deg, #020617 25%, transparent 100%); display:flex; flex-direction:column; justify-content:top;">
@@ -453,11 +468,11 @@
 
     <section id="screen-quiz" class="screen">
         <header class="header-bar">
-            <div class="logo-sec">MovieRR</div>
+            <div class="logo-sec">Review</div>
             <div class="title-sec"><span id="quiz-movie-name" class="text-glow"></span></div>
             <div class="score-sec">
                 <div id="diff-badge" class="score-badge">+0.0</div>
-                <span style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase;">Current Score</span>
+                <span style="font-size: 0.7rem; opacity: 0.6; text-transform: uppercase;">Rate</span>
                 <span id="live-score" style="font-size: 1.4rem; font-weight: 800; color: var(--accent-gold);">0.0</span>
             </div>
         </header>
@@ -479,7 +494,9 @@
             <div class="title-sec"><span style="opacity:0.4; letter-spacing:1px;">Movie Review-Rate</span></div>
         </header>
         <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <h2 id="final-title" style="font-size:2.8rem; margin-bottom:10px; text-transform: uppercase;"></h2>
+            <img src="default-media/bg.png"
+                style="max-height: 320px; max-width: 320px; margin-bottom:10px; opacity:0.8; border: 2px solid var(-accent-blue); border-radius: 12px;">
+            <h2 id="final-title" style="font-size:2rem; margin-bottom:10px; text-transform: uppercase;"></h2>
 
             <div id="star-container" class="text-glow"></div>
 
@@ -581,7 +598,7 @@
             const detailsVideoSrc = data.details_video || data.media_url; // Fallback to main if details is missing
 
             document.getElementById('details-media-box').innerHTML =
-                `<video src="${detailsVideoSrc}" autoplay muted loop playsinline style="width:100%; height:100%; object-fit:cover;"></video>`;
+                `<video src="${detailsVideoSrc}" autoplay muted loop playsinline style="max-height: 90%; max-width: auto; opacity: 1.0; object-fit: contain; margin: 25px; border: 2px solid var(-accent-blue); border-radius: 12px;"></video>`;
 
             document.getElementById('det-title').innerText = data.title;
 
