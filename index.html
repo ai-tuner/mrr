@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
+            font-family: monospace, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -494,8 +494,8 @@
             <div class="title-sec"><span style="opacity:0.4; letter-spacing:1px;">Movie Review-Rate</span></div>
         </header>
         <div style="flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <img src="default-media/bg.png"
-                style="max-height: 320px; max-width: 320px; margin-bottom:10px; opacity:0.8; border: 2px solid var(-accent-blue); border-radius: 12px;">
+            <img src="review-media/dhurandhar.png"
+                style="height: 320px; max-width: 320px; margin-bottom:10px; opacity:0.8; border: 2px solid var(-accent-blue); border-radius: 12px; object-fit:cover;">
             <h2 id="final-title" style="font-size:2rem; margin-bottom:10px; text-transform: uppercase;"></h2>
 
             <div id="star-container" class="text-glow"></div>
@@ -549,42 +549,46 @@
         }
 
         async function boot() {
-            if (!jsonFile) return alert("Select a movie.");
+    if (!jsonFile) return alert("Select a movie.");
 
-            // 1. UNLOCK & PRE-LOAD ALL AUDIO OBJECTS
-            // This satisfies Safari and Chrome's security policies for all devices
-            Object.values(aud).forEach(sound => {
-                sound.play().then(() => {
-                    sound.pause();
-                    sound.currentTime = 0;
-                }).catch(() => { });
-            });
+    // 1. UNLOCK using a "silent" or empty play 
+    // We only play/pause the objects themselves, not the heavy movie files
+    Object.values(aud).forEach(sound => {
+        sound.play().then(() => {
+            sound.pause();
+            sound.currentTime = 0;
+        }).catch(() => { });
+    });
 
-            const res = await fetch(jsonFile);
-            data = await res.json();
+    const res = await fetch(jsonFile);
+    data = await res.json();
 
-            // 2. ASSIGN SOURCES IMMEDIATELY AFTER FETCH
-            // We map the JSON data to the audio objects now so they are ready later
-            aud.bg.src = data.bg_music;
-            aud.voice.src = data.intro_voice;
-            aud.worst.src = data.worst;
-            aud.normal.src = data.normal;
-            aud.excellent.src = data.excellent;
+    // 2. ASSIGN SOURCES ONLY AFTER UNLOCKING IS DONE
+    // This ensures the iPad doesn't 'preview' the actual audio files
+    aud.bg.src = data.bg_music;
+    aud.voice.src = data.intro_voice;
+    
+    // We only load these, we don't 'play' them to unlock
+    aud.worst.src = data.worst;
+    aud.normal.src = data.normal;
+    aud.excellent.src = data.excellent;
 
-            // 3. SETTINGS FOR BG MUSIC (But don't play yet)
-            aud.bg.loop = true;
-            aud.bg.volume = 0.3;
+    // 3. SETTINGS
+    aud.bg.loop = true;
+    aud.bg.volume = 0.3;
 
-            show('screen-video');
-            const v = document.getElementById('main-video');
-            v.muted = false;
-            v.src = data.media_url;
-            v.play().catch(() => {
-                v.muted = true; // Auto-fallback for strict browsers
-                v.play();
-            });
-            v.onended = () => runDetails();
-        }
+    show('screen-video');
+    const v = document.getElementById('main-video');
+    v.muted = false;
+    v.src = data.media_url;
+    
+    // Standard iOS play command
+    v.play().catch(() => {
+        v.muted = true; 
+        v.play();
+    });
+    v.onended = () => runDetails();
+}
 
         function show(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -604,7 +608,7 @@
 
             type("det-text", data.cast_crew, 30, () => {
                 aud.voice.play().catch((e) => console.log("Voice failed:", e));
-                setTimeout(runQuiz, 4000);
+                setTimeout(runQuiz, 16000);
             });
         }
 
