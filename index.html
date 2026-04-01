@@ -425,7 +425,7 @@
             /* Horizontal centering */
             overflow: hidden;
             /* Prevents accidental scrollbars */
-            
+
             /* Optional: adds depth behind the video */
         }
     </style>
@@ -549,46 +549,42 @@
         }
 
         async function boot() {
-    if (!jsonFile) return alert("Select a movie.");
+            if (!jsonFile) return alert("Select a movie.");
 
-    // 1. UNLOCK using a "silent" or empty play 
-    // We only play/pause the objects themselves, not the heavy movie files
-    Object.values(aud).forEach(sound => {
-        sound.play().then(() => {
-            sound.pause();
-            sound.currentTime = 0;
-        }).catch(() => { });
-    });
+            // 1. UNLOCK & PRE-LOAD ALL AUDIO OBJECTS
+            // This satisfies Safari and Chrome's security policies for all devices
+            Object.values(aud).forEach(sound => {
+                sound.play().then(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }).catch(() => { });
+            });
 
-    const res = await fetch(jsonFile);
-    data = await res.json();
+            const res = await fetch(jsonFile);
+            data = await res.json();
 
-    // 2. ASSIGN SOURCES ONLY AFTER UNLOCKING IS DONE
-    // This ensures the iPad doesn't 'preview' the actual audio files
-    aud.bg.src = data.bg_music;
-    aud.voice.src = data.intro_voice;
-    
-    // We only load these, we don't 'play' them to unlock
-    aud.worst.src = data.worst;
-    aud.normal.src = data.normal;
-    aud.excellent.src = data.excellent;
+            // 2. ASSIGN SOURCES IMMEDIATELY AFTER FETCH
+            // We map the JSON data to the audio objects now so they are ready later
+            aud.bg.src = data.bg_music;
+            aud.voice.src = data.intro_voice;
+            aud.worst.src = data.worst;
+            aud.normal.src = data.normal;
+            aud.excellent.src = data.excellent;
 
-    // 3. SETTINGS
-    aud.bg.loop = true;
-    aud.bg.volume = 0.3;
+            // 3. SETTINGS FOR BG MUSIC (But don't play yet)
+            aud.bg.loop = true;
+            aud.bg.volume = 0.3;
 
-    show('screen-video');
-    const v = document.getElementById('main-video');
-    v.muted = false;
-    v.src = data.media_url;
-    
-    // Standard iOS play command
-    v.play().catch(() => {
-        v.muted = true; 
-        v.play();
-    });
-    v.onended = () => runDetails();
-}
+            show('screen-video');
+            const v = document.getElementById('main-video');
+            v.muted = false;
+            v.src = data.media_url;
+            v.play().catch(() => {
+                v.muted = true; // Auto-fallback for strict browsers
+                v.play();
+            });
+            v.onended = () => runDetails();
+        }
 
         function show(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
